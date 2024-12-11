@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { AiOutlineMail, AiOutlineLock, AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import { Link } from 'react-router';
+import { AuthContext } from '../../providers/AuthProvider';
 
 const SignUp = () => {
+    const { createUser } = useContext(AuthContext)
+
+
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
     const [formData, setFormData] = useState({
@@ -29,19 +33,22 @@ const SignUp = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-
-        // if (!formData.email || !formData.password || !formData.confirmPassword) {
-        //     alert('All fields are required!');
-        //     return;
-        // }
-
         if (formData.password !== formData.confirmPassword) {
             toast.error('Password and confirm Password are not same!');
             return;
         }
 
 
-        console.log('Form Data:', formData);
+        createUser(formData.email, formData.password)
+            .then(result => {
+                const loggedUser = result.user
+                console.log(loggedUser.email);
+                toast.success(` You successfuly created an accout`);
+            })
+            .catch((error) => {
+                const errorMessage = error.message;
+                toast.error(`${errorMessage}`);
+            })
 
         setFormData({
             email: '',
