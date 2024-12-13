@@ -34,7 +34,10 @@ const SignIn = () => {
 
         console.log('Form Data:', formData);
         createSignIn(formData.email, formData.password)
-        navigate('/')
+            .then(() => {
+
+                navigate('/')
+            })
 
         setFormData({
             email: '',
