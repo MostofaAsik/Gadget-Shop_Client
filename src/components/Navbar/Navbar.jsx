@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
 import { Link, NavLink } from 'react-router';
+import useAuth from '../../hooks/useAuth';
 
 const Navbar = () => {
 
+    const { user, signOutUser } = useAuth()
 
+    const handleLogout = () => {
+        signOutUser()
+    }
 
     const navLinks = <>
         <li><NavLink to='/'>Home</NavLink></li>
@@ -44,9 +49,25 @@ const Navbar = () => {
 
                 </ul>
             </div>
-            <div className="navbar-end">
-                <Link to='/signin' className="btn border bg-gray-200 font-bold">SignIn</Link>
-            </div>
+            {
+                user ? <div className='navbar-end'>
+                    <div className="dropdown dropdown-end">
+                        <div tabIndex={0} role="button" className="btn m-1">
+                            <img className='w-10' src={user.photoURL
+                                || '/public/user.png'} alt="photo" />
+
+                        </div>
+                        <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+                            <li><Link>Dashboard</Link></li>
+                            <li><button onClick={handleLogout}>LogOut</button></li>
+                        </ul>
+                    </div>
+                </div> :
+                    <div className="navbar-end">
+                        <Link to='/signin' className="btn border bg-gray-200 font-bold">SignIn</Link>
+                    </div>
+            }
+
         </div>
     );
 };

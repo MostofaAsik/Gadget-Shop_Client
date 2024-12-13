@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
+import useAuth from '../../hooks/useAuth';
+import SocialLogIn from '../../components/SocialLogin/SocialLogIn';
 
 const SignIn = () => {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
     });
+
+    const { createSignIn } = useAuth()
+    const navigate = useNavigate()
 
     // Handle input changes
     const handleInputChange = (e) => {
@@ -28,7 +33,8 @@ const SignIn = () => {
 
 
         console.log('Form Data:', formData);
-
+        createSignIn(formData.email, formData.password)
+        navigate('/')
 
         setFormData({
             email: '',
@@ -88,7 +94,11 @@ const SignIn = () => {
                         Sign Up
                     </Link>
                 </p>
+                <div>
+                    <SocialLogIn />
+                </div>
             </div>
+
         </div>
     );
 };

@@ -1,12 +1,16 @@
 import React, { useContext, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { AiOutlineMail, AiOutlineLock, AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { AuthContext } from '../../providers/AuthProvider';
+import useAuth from '../../hooks/useAuth';
+import SocialLogIn from '../../components/SocialLogin/SocialLogIn';
 
 const SignUp = () => {
-    const { createUser } = useContext(AuthContext)
+    // const { createUser } = useContext(AuthContext)
+    const { createUser } = useAuth()
 
+    const navigate = useNavigate()
 
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
@@ -14,7 +18,9 @@ const SignUp = () => {
         email: '',
         password: '',
         confirmPassword: '',
+        role: 'buyer',
     });
+
 
     // Toggle password visibility
     const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible);
@@ -29,9 +35,11 @@ const SignUp = () => {
         }));
     };
 
+
     // Handle form submit
     const handleSubmit = (e) => {
         e.preventDefault();
+        console.log(formData);
 
         if (formData.password !== formData.confirmPassword) {
             toast.error('Password and confirm Password are not same!');
@@ -44,6 +52,7 @@ const SignUp = () => {
                 const loggedUser = result.user
                 console.log(loggedUser.email);
                 toast.success(` You successfuly created an accout`);
+                navigate('/')
             })
             .catch((error) => {
                 const errorMessage = error.message;
@@ -127,15 +136,28 @@ const SignUp = () => {
                                 {confirmPasswordVisible ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
                             </button>
                         </div>
+                        <div className='mt-2'>
+                            <p >Role</p>
+                            <select
+                                id="role"
+                                value={formData.role}
+                                onChange={handleInputChange}
+                                className="select select-bordered w-full mt-1"
+                                required
+                            >
+                                <option value='buyer'>Buyer</option>
+                                <option value='seller'>Seller</option>
+                            </select>
+                        </div>
                     </div>
 
                     <button
                         type="submit"
-                        className="w-full bg-blue-600 text-white text-lg font-bold py-3 rounded-lg hover:bg-blue-700 transition-all"
+                        className="w-full bg-blue-600 text-white text-lg font-bold py-3 rounded-lg hover:bg-blue-700 transition-all "
                     >
                         Sign Up
                     </button>
-                </form>
+                </form >
 
                 <p className="text-center text-gray-600 mt-6">
                     Already have an account?
@@ -146,9 +168,13 @@ const SignUp = () => {
                         Sign In
                     </Link>
                 </p>
-            </div>
+                <div>
+                    <SocialLogIn />
+                </div>
+            </div >
+
             <Toaster />
-        </div>
+        </div >
     );
 };
 
