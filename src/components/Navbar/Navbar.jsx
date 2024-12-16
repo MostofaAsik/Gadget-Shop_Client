@@ -54,7 +54,7 @@ const Navbar = () => {
                     <div className="dropdown dropdown-end">
                         <div tabIndex={0} role="button" className="btn m-1">
                             <img className='w-10' src={user.photoURL
-                                || '/public/user.png'} alt="photo" />
+                                || '/user.png'} alt="photo" />
 
                         </div>
                         <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">

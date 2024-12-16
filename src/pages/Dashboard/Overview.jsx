@@ -1,8 +1,14 @@
 import React from 'react';
 import { AiOutlineUser, AiOutlineShoppingCart, AiOutlineDollarCircle } from 'react-icons/ai';
 import { FaChartLine } from 'react-icons/fa';
+import useAuth from '../../hooks/useAuth';
+import useUserData from './../../hooks/useUserData';
 
 const Overview = () => {
+    const { user } = useAuth()
+    const { userData } = useUserData()
+    console.log(userData);
+
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
             {/* User Info Section */}
@@ -15,9 +21,9 @@ const Overview = () => {
                     />
                 </div>
                 <div className="mt-4 md:mt-0 md:ml-6 text-center md:text-left">
-                    <h2 className="text-2xl font-bold text-gray-800">John Doe</h2>
-                    <p className="text-gray-600">johndoe@example.com</p>
-                    <p className="text-sm text-blue-600 mt-2">Premium User</p>
+                    <h2 className="text-2xl font-bold text-gray-800"></h2>
+                    <p className="text-gray-600">{user.email}</p>
+                    <p className="text-sm text-blue-600 mt-2">{userData?.role}</p>
                 </div>
             </div>
 
