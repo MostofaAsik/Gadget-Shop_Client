@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import SearchBar from './SearchBar';
-import { FaFilter } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight, FaFilter } from 'react-icons/fa';
 import Loader from './Loader';
 
 const Products = () => {
@@ -12,15 +12,13 @@ const Products = () => {
     const [sortOption, setSortOption] = useState('default');
     const [category, setCategory] = useState('All');
     const [brand, setBrand] = useState('All');
-    const [totalPage, setTotalPage] = useState(null)
-    const [brands, setBrands] = useState([])
-    const [categories, setCategories] = useState([])
+    const [brands, setBrands] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const itemsPerPage = 2; // Number of products per page
 
-    // Example list of categories and brands for the dropdown
-    // const categories = ['All', 'Electronics', 'Clothing', 'Furniture', 'Books', 'Toys'];
-    // const brands = ['All', 'Samsung', 'Apple', 'Sony', 'LG', 'Nike', 'Adidas'];
-
-    // 🛠️ Function to fetch products based on filters, sort, and search query
+    // 🛠️ Function to fetch products based on filters, sort, and pagination
     const fetchProducts = async () => {
         try {
             setLoading(true);
@@ -28,15 +26,16 @@ const Products = () => {
                 title: searchQuery,
                 sort: sortOption === 'price-low-to-high' ? 'asc' : 'desc',
                 category: category !== 'All' ? category : '',
-                brand: brand !== 'All' ? brand : ''
+                brand: brand !== 'All' ? brand : '',
+                page: page,
+                limit: itemsPerPage
             };
             const response = await axios.get('http://localhost:5000/all-products', { params });
 
             setProducts(response.data.products);
-            // console.log(response.data);
             setBrands(response.data.brands);
             setCategories(response.data.categories);
-            setTotalPage(response.data.totalProduct);
+            setTotalPages(Math.ceil(response.data.totalProduct / itemsPerPage)); // Calculate total pages
         } catch (error) {
             console.error('Error fetching products:', error);
             setError('Failed to load products. Please try again later.');
@@ -45,47 +44,37 @@ const Products = () => {
         }
     };
 
-    // Call fetchProducts whenever the search, sort, category, or brand changes
+
     useEffect(() => {
-        const debounceTimer = setTimeout(() => {
-            fetchProducts();
-        }, 0); // Debounce API calls by 300ms
+        fetchProducts();
+    }, [searchQuery, sortOption, category, brand, page]);
 
-        // Clear previous timeout
-        return () => clearTimeout(debounceTimer);
-    }, [searchQuery, sortOption, category, brand]);
-
-    const handleSortChange = (e) => {
-        setSortOption(e.target.value);
-    };
-
-    const handleCategoryChange = (e) => {
-        setCategory(e.target.value);
-    };
-
-    const handleBrandChange = (e) => {
-        setBrand(e.target.value);
-    };
+    const handleSortChange = (e) => setSortOption(e.target.value);
+    const handleCategoryChange = (e) => setCategory(e.target.value);
+    const handleBrandChange = (e) => setBrand(e.target.value);
 
     const handleResetFilters = () => {
-        setSearchQuery(''); // Reset search query
-        setSortOption('default'); // Reset sort option to default
-        setCategory('All'); // Reset category filter
-        setBrand('All'); // Reset brand filter
+        setSearchQuery('');
+        setSortOption('default');
+        setCategory('All');
+        setBrand('All');
     };
 
-    if (error) {
-        return <p className="text-red-500">{error}</p>;
-    }
+    const handlePageChange = (newPage) => {
+        if (newPage > 0 && newPage <= totalPages) {
+            setPage(newPage);
+            window.scroll({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    if (error) return <p className="text-red-500">{error}</p>;
 
     return (
         <div className="container mx-auto p-4">
-            {/* Header */}
             <header className="mb-8">
                 <h1 className="text-3xl font-bold text-center">Our Products</h1>
             </header>
 
-            {/* Search and Sort Bar */}
             <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
                 <SearchBar setSearchQuery={setSearchQuery} />
                 <select
@@ -100,76 +89,54 @@ const Products = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {/* Filter Sidebar */}
                 <aside className="bg-white p-4 rounded-lg shadow-md">
-                    <h2 className="text-xl font-bold mb-4 flex items-center">
-                        <FaFilter className="mr-2" /> Filter
-                    </h2>
-
-                    {/* Category Dropdown */}
+                    <h2 className="text-xl font-bold mb-4 flex items-center"><FaFilter className="mr-2" /> Filter</h2>
                     <label className="block mb-2 font-semibold">Category</label>
-                    <select
-                        value={category}
-                        onChange={handleCategoryChange}
-                        className="w-full p-2 border border-gray-300 rounded-lg mb-4"
-                    >
-                        <option value={''}>
-                            Category
-                        </option>
-                        {categories?.map((categoryOption, index) => (
-                            <option key={index} value={categoryOption}>
-                                {categoryOption}
-                            </option>
-                        ))}
+                    <select value={category} onChange={handleCategoryChange} className="w-full p-2 border rounded-lg mb-4">
+                        <option value=''>All</option>
+                        {categories.map((cat, i) => <option key={i} value={cat}>{cat}</option>)}
                     </select>
-
-                    {/* Brand Dropdown */}
                     <label className="block mb-2 font-semibold">Brand</label>
-                    <select
-                        value={brand}
-                        onChange={handleBrandChange}
-                        className="w-full p-2 border border-gray-300 rounded-lg mb-4"
-                    >
-                        <option value={''}>
-                            Brand
-                        </option>
-                        {brands?.map((brandOption, index) => (
-                            <option key={index} value={brandOption}>
-                                {brandOption}
-                            </option>
-                        ))}
+                    <select value={brand} onChange={handleBrandChange} className="w-full p-2 border rounded-lg mb-4">
+                        <option value=''>All</option>
+                        {brands.map((brand, i) => <option key={i} value={brand}>{brand}</option>)}
                     </select>
-
-                    {/* Reset Button */}
-                    <button
-                        onClick={handleResetFilters}
-                        className="w-full bg-red-500 text-white font-bold py-2 rounded-lg mt-4 hover:bg-red-600 transition"
-                    >
-                        Reset Filters
-                    </button>
+                    <button onClick={handleResetFilters} className="w-full bg-red-500 text-white font-bold py-2 rounded-lg">Reset Filters</button>
                 </aside>
 
-                {/* Products Grid */}
                 <section className="col-span-3">
+                    {loading && <Loader />}
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                        {loading && <Loader />}
-                        {/* {products.length === 0 && <p className='text-red-600 text-3xl text-center'>No Product Found</p>} */}
                         {products.map(product => (
                             <div key={product._id} className="bg-white p-4 rounded-lg shadow-md">
-                                <img
-                                    src={product.imageURL}
-                                    alt={product.title}
-                                    className="w-full h-48 object-cover rounded-t-lg"
-                                />
-                                <div className="p-4">
-                                    <h3 className="text-lg font-semibold">{product.title}</h3>
-                                    <p className="text-gray-800 font-bold">${product.price}</p>
-                                    <button className="w-full bg-blue-500 text-white font-bold py-2 rounded-lg mt-4">
-                                        Add WishList
-                                    </button>
-                                </div>
+                                <img src={product.imageURL} alt={product.title} className="w-full h-48 object-cover rounded-t-lg" />
+                                <h3 className="text-lg font-semibold">{product.title}</h3>
+                                <p className="text-gray-800 font-bold">${product.price}</p>
                             </div>
                         ))}
+                    </div>
+                    <div className="flex justify-center items-center mt-6 space-x-4">
+                        <button
+                            onClick={() => handlePageChange(page - 1)}
+                            disabled={page === 1}
+                            className={`flex items-center justify-center px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md transition-all duration-300 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                            <FaArrowLeft className="mr-2" />
+                            Previous
+                        </button>
+
+                        <span className="text-lg font-bold bg-gray-100 px-4 py-2 rounded-lg shadow-md">
+                            {page} / {totalPages}
+                        </span>
+
+                        <button
+                            onClick={() => handlePageChange(page + 1)}
+                            disabled={page === totalPages}
+                            className={`flex items-center justify-center px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md transition-all duration-300 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                            Next
+                            <FaArrowRight className="ml-2" />
+                        </button>
                     </div>
                 </section>
             </div>
